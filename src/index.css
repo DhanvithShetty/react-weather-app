@@ -49,6 +49,10 @@
   background-color: var(--section-overlay);
 }
 
+.section__temperature {
+  padding: 24px;
+}
+
 .section__inputs > input {
   border: 1px solid white;
   border-radius: 4px;
@@ -57,6 +61,7 @@
   color: white;
   font-size: 20px;
   font-weight: 200;
+  text-transform: capitalize;
 }
 
 .section__inputs > input:focus {

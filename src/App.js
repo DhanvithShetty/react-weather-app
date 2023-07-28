@@ -1,32 +1,75 @@
-// import hotBG from ""
+import hotBG from "../src/assets/hotbg.jpg";
 import coldBG from "../src/assets/coldbg.jpg";
+import Description from "./components/Description/Description";
+import { useEffect, useState } from "react";
+import { getFormattedWeatherData } from "./weatherService";
 
 function App() {
+  const [city, setCity] = useState("Paris");
+  const [weather, setWeather] = useState(null);
+  const [units, setUnits] = useState("metric");
+  const [bg, setBg] = useState(hotBG);
+
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      const data = await getFormattedWeatherData(city, units);
+      setWeather(data);
+
+      // dynamic bg
+      const threshold = units === "metric" ? 20 : 60;
+      if (data.temp <= threshold) setBg(coldBG);
+      else setBg(hotBG);
+    };
+
+    fetchWeatherData();
+  }, [units, city]);
+
+  const handleUnitsClick = (e) => {
+    const button = e.currentTarget;
+    const currentUnit = button.innerText.slice(1);
+
+    const isCelsius = currentUnit === "C";
+    button.innerText = isCelsius ? "°F" : "°C";
+    setUnits(isCelsius ? "metric" : "imperial");
+  };
+
+  const enterKeyPressed = (e) => {
+    if (e.keyCode === 13) {
+      setCity(e.currentTarget.value);
+      e.currentTarget.blur();
+    }
+  };
+
   return (
-    <div className="app" style={{ backgroundImage: `url(${coldBG})` }}>
+    <div className="app" style={{ backgroundImage: `url(${bg})` }}>
       <div className="overlay">
-        <div className="container">
-          <div className="section section__inputs">
-            <input type="text" name="city" placeholder="Enter City..." />
-            <button>°F</button>
-          </div>
-
-          <div className="section section__temperature">
-            <div className="icon">
-              <h3>London,GB</h3>
-              <img
-                src="https://openweathermap.org/img/wn/02d@2x.png"
-                alt="weatherIcon"
+        {weather && (
+          <div className="container">
+            <div className="section section__inputs">
+              <input
+                onKeyDown={enterKeyPressed}
+                type="text"
+                name="city"
+                placeholder="Enter City..."
               />
-              <h3>Cloudy</h3>
+              <button onClick={(e) => handleUnitsClick(e)}>°F</button>
             </div>
-            <div className="temperature">
-              <h1>34 °C</h1>
-            </div>
-          </div>
 
-          {/* bottom desc */}
-        </div>
+            <div className="section section__temperature">
+              <div className="icon">
+                <h3>{`${weather.name}, ${weather.country}`}</h3>
+                <img src={weather.iconURL} alt="weatherIcon" />
+                <h3>{weather.description}</h3>
+              </div>
+              <div className="temperature">
+                <h1>{`${weather.temp.toFixed()} °${
+                  units === "metric" ? "C" : "F"
+                }`}</h1>
+              </div>
+            </div>
+            <Description weather={weather} units={units} />
+          </div>
+        )}
       </div>
     </div>
   );
